@@ -1,0 +1,40 @@
+services:
+  web:
+    build: .
+    volumes:
+      - .:/usr/src/web/
+    depends_on:
+      - db
+      - redis
+  
+  db:
+    image: postgres
+    container_name: local_pgdb
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: tz
+      POSTGRES_PASSWORD: tz
+      POSTGRES_DB: tz
+    volumes:
+      - local_pgdata:/var/lib/postgresql/data
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin4_container
+    restart: always
+    ports:
+      - "8888:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+
+  redis:
+    image: redis:6
+
+volumes:
+  local_pgdata:
+  pgadmin-data:
