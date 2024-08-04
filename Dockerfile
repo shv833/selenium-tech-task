@@ -11,12 +11,26 @@ ENV PYTHONFAULTHANDLER=1 \
   # Poetry's configuration:
   POETRY_NO_INTERACTION=1 \
   POETRY_VIRTUALENVS_CREATE=false \
-  POETRY_CACHE_DIR='/var/cache/pypoetry' \
-  POETRY_HOME='/usr/local'
+  POETRY_CACHE_DIR="/var/cache/pypoetry" \
+  POETRY_HOME="/usr/local" \
+  PATH="/usr/src/web:$PATH"
+
+RUN apk add --no-cache \
+  curl \
+  gcc \
+  g++ \
+  make \
+  bash \
+  dos2unix \
+  libffi-dev \
+  libpq-dev \
+  postgresql-dev \
+  chromium \
+  chromium-chromedriver \
+  redis
 
 
-RUN apk add --no-cache curl gcc g++ make bash dos2unix libffi-dev \
-    && curl -sSL https://install.python-poetry.org | python3 -
+RUN curl -sSL https://install.python-poetry.org | python3 -
 
 COPY pyproject.toml poetry.lock .
 RUN poetry install --no-interaction --no-ansi
