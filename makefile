@@ -7,3 +7,5 @@ crun:
 format:
 	black .
 
+poetry:
+	poetry install
