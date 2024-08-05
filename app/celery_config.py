@@ -1,4 +1,10 @@
 from celery import Celery
+import logging
+
+
+logger = logging.getLogger("celery")
+logger.setLevel(logging.INFO)
+logger.addHandler(logging.StreamHandler())
 
 app = Celery(
     "tasks",
@@ -8,13 +14,14 @@ app = Celery(
 )
 
 app.conf.beat_schedule = {
-    "fetch-users-every-hour": {
+    "fetch-users": {
         "task": "app.tasks.fetch_users",
-        "schedule": 10.0,
+        "schedule": 15.0,
     },
-    "fetch-address-credit-card-every-2-hours": {
+    "fetch-address-credit-card": {
         "task": "app.tasks.fetch_address_credit_card",
-        "schedule": 11.0,
+        "schedule": 25.0,
     },
 }
+
 app.conf.timezone = "UTC"

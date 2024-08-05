@@ -1,7 +1,8 @@
-from sqlalchemy import create_engine, Column, Integer, String, JSON
+from sqlalchemy import create_engine, Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 import os
+
 
 DB_USER = os.environ.get("DB_USER")
 DB_PASSWORD = os.environ.get("DB_PASSWORD")
@@ -20,8 +21,8 @@ class User(Base):
     name = Column(String)
     username = Column(String)
     email = Column(String)
-    address = Column(JSON)
-    credit_card = Column(JSON)
+    address = Column(String)
+    credit_card = Column(String)
 
 
 Base.metadata.create_all(bind=engine)

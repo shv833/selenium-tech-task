@@ -6,9 +6,9 @@ services:
     depends_on:
       - db
       - redis
+      - chrome
     env_file:
       - .env
-
   db:
     image: postgres
     container_name: local_pgdb
@@ -36,6 +36,11 @@ services:
 
   redis:
     image: redis:6
+  
+  chrome:
+    image: seleniarm/standalone-chromium
+    ports:
+      - "4444:4444"
 
 volumes:
   local_pgdata:

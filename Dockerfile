@@ -25,14 +25,12 @@ RUN apk add --no-cache \
   libffi-dev \
   libpq-dev \
   postgresql-dev \
-  chromium \
-  chromium-chromedriver \
   redis
 
 
 RUN curl -sSL https://install.python-poetry.org | python3 -
 
-COPY pyproject.toml poetry.lock .
+COPY pyproject.toml poetry.lock ./
 RUN poetry install --no-interaction --no-ansi
 
 COPY . .
