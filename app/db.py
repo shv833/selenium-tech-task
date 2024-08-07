@@ -1,6 +1,5 @@
-from sqlalchemy import create_engine, Column, Integer, String
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy import create_engine, Column, Integer, String, ForeignKey
+from sqlalchemy.orm import sessionmaker, declarative_base, relationship
 import os
 
 
@@ -21,8 +20,21 @@ class User(Base):
     name = Column(String)
     username = Column(String)
     email = Column(String)
+    credit_info = relationship("CreditInfo", back_populates="user", uselist=False)
+
+
+class CreditInfo(Base):
+    __tablename__ = "creditinfo"
+    id = Column(Integer, primary_key=True, index=True)
     address = Column(String)
     credit_card = Column(String)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    user = relationship("User", back_populates="credit_info")
 
 
-Base.metadata.create_all(bind=engine)
+def create_tables():
+    Base.metadata.create_all(bind=engine)
+
+
+if __name__ == "__main__":
+    create_tables()

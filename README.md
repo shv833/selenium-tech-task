@@ -1,15 +1,9 @@
 # Requirements
-* Poetry
 * Docker
 * Make
 * Python
 
 # Main commands
-Installing packages
-```
-make poetry
-```
-
 Formatting the code
 ```
 make format
@@ -28,7 +22,7 @@ make crun
 # First step
 
 1. Rename `.env.example` file to `.env`
-2. Run command `make run`
+2. Run command `make crun`
 3. Open `http://localhost:8888/` and login with next creds: login `admin@admin.com`, password `admin`
 4. Register new server for viewing data with next info:
 * Name - `tz`

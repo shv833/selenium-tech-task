@@ -1,60 +1,9 @@
-from functools import wraps
-from selenium import webdriver
 from selenium.webdriver.common.by import By
 from .celery_config import app
-from .db import SessionLocal, User
+from .db import SessionLocal, User, CreditInfo
+from .utils import get_api_info_script, with_webdriver
 import json
-import logging
 import os
-
-
-logger = logging.getLogger(__name__)
-logger.addHandler(logging.StreamHandler())
-
-
-def script(URL, KEY, HOST):
-    return """
-    var xhr = new XMLHttpRequest();
-    xhr.open("GET", "%s", false);
-    xhr.setRequestHeader("x-rapidapi-key", "%s");
-    xhr.setRequestHeader("x-rapidapi-host", "%s");
-    xhr.send(null);
-    return xhr.responseText;
-    """ % (
-        URL,
-        KEY,
-        HOST,
-    )
-
-
-def with_webdriver(func):
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        options = webdriver.ChromeOptions()
-        options.add_argument("--headless")
-        options.add_argument("--no-sandbox")
-        options.add_argument("--disable-dev-shm-usage")
-        options.add_argument("--window-size=1920,1080")
-        options.add_argument("--disable-gpu")
-        options.add_argument("--disable-blink-features=AutomationControlled")
-
-        hub_url = "http://chrome:4444/wd/hub"
-        driver = webdriver.Remote(command_executor=hub_url, options=options)
-
-        try:
-            result = func(driver, *args, **kwargs)
-        except Exception as e:
-            logger.error(f"Error occurred: {e}")
-            raise
-        finally:
-            try:
-                driver.quit()
-            except Exception as quit_exception:
-                logger.error(f"Failed to quit driver: {quit_exception}")
-
-        return result
-
-    return wrapper
 
 
 @app.task
@@ -88,7 +37,7 @@ def fetch_address_credit_card(driver):
     driver.get("data:text/html,<html></html>")
 
     address_url = "https://fake-information-generator.p.rapidapi.com/fake/address"
-    address_script = script(address_url, KEY, HOST)
+    address_script = get_api_info_script(address_url, KEY, HOST)
 
     address_result = driver.execute_script(address_script)
     address = json.loads(address_result)
@@ -96,18 +45,25 @@ def fetch_address_credit_card(driver):
     credit_url = (
         "https://fake-information-generator.p.rapidapi.com/fake/credit-card-number"
     )
-    credit_script = script(credit_url, KEY, HOST)
+    credit_script = get_api_info_script(credit_url, KEY, HOST)
 
     credit_result = driver.execute_script(credit_script)
     credit_card = json.loads(credit_result)
 
-    logger.info(address)
-    logger.info(credit_card)
-
     db = SessionLocal()
-    users = db.query(User).order_by(User.id.desc())
-    for user in users:
-        user.address = address["fake_address"]
-        user.credit_card = credit_card["fake_credit_card_number"]
-        db.commit()
+    for user in db.query(User).all():
+        db_credit_info = (
+            db.query(CreditInfo).filter(CreditInfo.user_id == user.id).first()
+        )
+        if not db_credit_info:
+            db_credit_info = CreditInfo(
+                user_id=user.id,
+                address=address["fake_address"],
+                credit_card=credit_card["fake_credit_card_number"],
+            )
+            db.add(db_credit_info)
+        else:
+            db_credit_info.address = address["fake_address"]
+            db_credit_info.credit_card = credit_card["fake_credit_card_number"]
+    db.commit()
     db.close()
