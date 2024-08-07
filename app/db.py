@@ -1,6 +1,7 @@
 from sqlalchemy import create_engine, Column, Integer, String, ForeignKey
 from sqlalchemy.orm import sessionmaker, declarative_base, relationship
 import os
+import time
 
 
 DB_USER = os.environ.get("DB_USER")
@@ -9,8 +10,14 @@ DB_NAME = os.environ.get("DB_NAME")
 DB_HOST = os.environ.get("DB_HOST")
 DATABASE_URL = f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}"
 
-engine = create_engine(DATABASE_URL)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+def create_session():
+    engine = create_engine(DATABASE_URL)
+    SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+    return engine, SessionLocal
+
+
+engine, SessionLocal = create_session()
 Base = declarative_base()
 
 
@@ -32,8 +39,22 @@ class CreditInfo(Base):
     user = relationship("User", back_populates="credit_info")
 
 
+def wait_for_db_connection(engine, retries=5, delay=2):
+    for i in range(retries):
+        try:
+            connection = engine.connect()
+            connection.close()
+            return True
+        except Exception as e:
+            time.sleep(delay)
+    return False
+
+
 def create_tables():
-    Base.metadata.create_all(bind=engine)
+    if wait_for_db_connection(engine):
+        Base.metadata.create_all(bind=engine)
+    else:
+        print("Could not create tables due to unsuccessful database connection.")
 
 
 if __name__ == "__main__":
