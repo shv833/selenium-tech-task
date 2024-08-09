@@ -4,6 +4,8 @@ from sqlalchemy.orm import sessionmaker
 from app.db import Base, User, CreditInfo
 import os
 from app.celery_config import app as celery_app
+from fastapi.testclient import TestClient
+from app.main import app
 
 
 DB_USER = os.environ.get("TEST_DB_USER")
@@ -21,7 +23,6 @@ def engine():
     engine = create_engine(DATABASE_URL)
     Base.metadata.create_all(bind=engine)
     yield engine
-    Base.metadata.drop_all(bind=engine)
 
 
 @pytest.fixture(scope="module")
@@ -52,3 +53,9 @@ def celery_config():
 def celery_app_configured(celery_config):
     celery_app.conf.update(celery_config)
     return celery_app
+
+
+@pytest.fixture(scope="module")
+def test_client():
+    client = TestClient(app)
+    yield client

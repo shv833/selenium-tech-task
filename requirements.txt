@@ -10,3 +10,5 @@ black==24.8.0
 fastapi
 uvicorn
 supervisor
+httpx
+pytest-subtests

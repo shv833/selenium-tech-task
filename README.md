@@ -1,7 +1,12 @@
-# Requirements
+# Requirements for testing project
+* Docker
+* Make
+
+# Requirements for development
 * Docker
 * Make
 * Python
+
 
 # Main commands
 Formatting the code
@@ -19,11 +24,18 @@ Clean run project (rebuild and run)
 make crun
 ```
 
-# First step
+Run tests
+```
+make test
+```
+
+# How to run
 
 1. Rename `.env.example` file to `.env`
 2. Run command `make crun`
-3. Open `http://localhost:8000/`, wait 25 seconds, reload the page and observe updated users credit card and address info\
+3. Open `http://localhost:8000/`, wait 25 seconds, reload the page and observe updated users credit card and address info
+4. Run command `make test` for executing tests (but make sure you have run command `make crun` first)
+5. Open `test_result` file which contains testing result
 
 OR
 
